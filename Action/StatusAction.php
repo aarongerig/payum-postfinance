@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DachcomDigital\Payum\PostFinance\Action;
 
 use Payum\Core\Action\ActionInterface;
@@ -7,15 +9,16 @@ use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Request\GetStatusInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
 use PostFinance\Ecommerce\EcommercePaymentResponse;
+use PostFinance\PaymentResponse;
 
 class StatusAction implements ActionInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param GetStatusInterface $request
      */
-    public function execute($request)
+    public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -23,31 +26,31 @@ class StatusAction implements ActionInterface
 
         if (null === $model['STATUS']) {
             $request->markNew();
+
             return;
         }
-        
-        $status = (int)$model['STATUS'];
+
+        $status = (int) $model['STATUS'];
 
         switch ($status) {
-            case EcommercePaymentResponse::STATUS_AUTHORISED:
+            case PaymentResponse::STATUS_AUTHORISED:
                 $request->markAuthorized();
                 break;
-            case EcommercePaymentResponse::STATUS_PAYMENT_REQUESTED:
-            case EcommercePaymentResponse::STATUS_PAYMENT:
-                # change to const as soon as PR is merged and STATUS_AUTHORISATION_CANCELLATION_WAITING is available
-            case 61:
+            case PaymentResponse::STATUS_PAYMENT_REQUESTED:
+            case PaymentResponse::STATUS_PAYMENT:
+            case PaymentResponse::STATUS_AUTHORISATION_CANCELLATION_WAITING:
                 $request->markCaptured();
                 break;
-            case EcommercePaymentResponse::STATUS_INCOMPLETE_OR_INVALID:
-            case EcommercePaymentResponse::STATUS_AUTHORISATION_REFUSED:
-            case EcommercePaymentResponse::STATUS_PAYMENT_REFUSED:
+            case PaymentResponse::STATUS_INCOMPLETE_OR_INVALID:
+            case PaymentResponse::STATUS_AUTHORISATION_REFUSED:
+            case PaymentResponse::STATUS_PAYMENT_REFUSED:
                 $request->markFailed();
                 break;
-            case EcommercePaymentResponse::STATUS_REFUND:
+            case PaymentResponse::STATUS_REFUND:
                 $request->markRefunded();
                 break;
-            case EcommercePaymentResponse::STATUS_CANCELLED_BY_CLIENT:
-            case EcommercePaymentResponse::STATUS_PAYMENT_DELETED:
+            case PaymentResponse::STATUS_CANCELLED_BY_CLIENT:
+            case PaymentResponse::STATUS_PAYMENT_DELETED:
                 $request->markCanceled();
                 break;
             default:
@@ -57,12 +60,11 @@ class StatusAction implements ActionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function supports($request)
+    public function supports($request): bool
     {
-        return
-            $request instanceof GetStatusInterface &&
-            $request->getModel() instanceof \ArrayAccess;
+        return $request instanceof GetStatusInterface
+            && $request->getModel() instanceof \ArrayAccess;
     }
 }

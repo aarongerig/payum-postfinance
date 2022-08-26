@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DachcomDigital\Payum\PostFinance\Action;
 
 use Payum\Core\Action\ActionInterface;
@@ -11,11 +13,11 @@ use Payum\Core\Request\Convert;
 class ConvertPaymentAction implements ActionInterface
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param Convert $request
      */
-    public function execute($request)
+    public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -32,13 +34,12 @@ class ConvertPaymentAction implements ActionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function supports($request)
+    public function supports($request): bool
     {
-        return
-            $request instanceof Convert &&
-            $request->getSource() instanceof PaymentInterface &&
-            $request->getTo() == 'array';
+        return $request instanceof Convert
+            && $request->getSource() instanceof PaymentInterface
+            && $request->getTo() === 'array';
     }
 }

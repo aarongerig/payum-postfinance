@@ -41,13 +41,6 @@ You'll find all available fields [here](https://e-payment.postfinance.ch/ncol/pa
 ## To-Do
 - Handle deprecated tokens?
 
-## Copyright and License
-Copyright: [DACHCOM.DIGITAL](http://dachcom-digital.ch)
+## Copyright and license
+Copyright: [CoreShop GmbH](https://www.coreshop.org)
 For licensing details please visit [LICENSE.md](LICENSE.md)
-
-### v1.0.5
-- Round amount before applying integer cast to prevent weird php int roundings.
-### v1.0.4
-- add race condition protection
-### v1.0.3
-- Do not submit empty values from `optionalParameters`

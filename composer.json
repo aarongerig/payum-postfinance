@@ -10,15 +10,21 @@
     "license": "GPL-3.0-or-later",
     "authors": [
         {
-            "name": "DACHCOM.DIGITAL Stefan Hagspiel",
-            "email": "shagspiel@dachcom.ch",
-            "homepage": "http://www.dachcom.com",
+            "name": "CoreShop Team",
+            "email": "info@coreshop.org",
+            "homepage": "https://www.coreshop.org/",
+            "role": "Developer"
+        },
+        {
+            "name": "Dominik Pfaffenbauer",
+            "email": "dominik@pfaffenbauer.at",
+            "homepage": "https://www.pfaffenbauer.at/",
             "role": "Developer"
         }
     ],
     "require": {
-        "payum/core": "^1.5",
-        "wysow/postfinance": "3.1.0"
+        "payum/core": "^1.7",
+        "wysow/postfinance": "^3.2"
     },
     "autoload": {
         "psr-4": {

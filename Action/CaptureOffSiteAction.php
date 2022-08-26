@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DachcomDigital\Payum\PostFinance\Action;
 
 use DachcomDigital\Payum\PostFinance\Api;
+use JsonException;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
@@ -31,11 +34,13 @@ class CaptureOffSiteAction implements ActionInterface, ApiAwareInterface, Gatewa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param Capture $request
+     *
+     * @throws JsonException
      */
-    public function execute($request)
+    public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -44,17 +49,17 @@ class CaptureOffSiteAction implements ActionInterface, ApiAwareInterface, Gatewa
         $httpRequest = new GetHttpRequest();
         $this->gateway->execute($httpRequest);
 
-        //we are back from postFinance site so we have to just update model.
+        // We are back from Postfinance site, so we have to just update model.
         if (isset($httpRequest->query['PAYID'])) {
             $model->replace($httpRequest->query);
         } else {
-            $extraData = $model['COMPLUS'] ? json_decode($model['COMPLUS'], true) : [];
+            $extraData = isset($model['COMPLUS']) ? \json_decode($model['COMPLUS'], true, 512, JSON_THROW_ON_ERROR) : [];
 
-            if (false == isset($extraData['capture_token']) && $request->getToken()) {
+            if (!isset($extraData['capture_token']) && $request->getToken()) {
                 $extraData['capture_token'] = $request->getToken()->getHash();
             }
 
-            if (false == isset($extraData['notify_token']) && $request->getToken() && $this->tokenFactory) {
+            if (!isset($extraData['notify_token']) && $this->tokenFactory && $request->getToken()) {
                 $notifyToken = $this->tokenFactory->createNotifyToken(
                     $request->getToken()->getGatewayName(),
                     $request->getToken()->getDetails()
@@ -65,17 +70,17 @@ class CaptureOffSiteAction implements ActionInterface, ApiAwareInterface, Gatewa
 
             }
 
-            $model['COMPLUS'] = json_encode($extraData);
+            $model['COMPLUS'] = \json_encode($extraData, JSON_THROW_ON_ERROR);
 
-            //payment/capture/xy
+            // payment/capture/xy
             $targetUrl = $request->getToken()->getTargetUrl();
 
-            //accept url
+            // Accept URL
             if (null === $model['ACCEPTURL'] && $request->getToken()) {
                 $model['ACCEPTURL'] = $targetUrl;
             }
 
-            //cancel url
+            // Cancel URL
             if (null === $model['CANCELURL'] && $request->getToken()) {
                 $model['CANCELURL'] = $targetUrl;
             }
@@ -88,12 +93,11 @@ class CaptureOffSiteAction implements ActionInterface, ApiAwareInterface, Gatewa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function supports($request)
+    public function supports($request): bool
     {
-        return
-            $request instanceof Capture &&
-            $request->getModel() instanceof \ArrayAccess;
+        return $request instanceof Capture
+            && $request->getModel() instanceof \ArrayAccess;
     }
 }
